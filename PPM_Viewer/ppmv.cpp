@@ -1,6 +1,6 @@
 #include "ppmv.h"
 
-using namespace std;
+#define FRAMES_PER_SECOND 60
 
 bool IsRunning = false;
 
@@ -47,7 +47,7 @@ video_buffer InitVideoBuffer(int width, int height)
 	return buffer;
 }
 
-void ReadLine(ppm_file* result, LINE_TYPE type, string line, int recordSequence)
+void ReadLine(ppm_file* result, LINE_TYPE type, std::string line, int recordSequence)
 {
 	const char* c_line = line.c_str();
 	char* next;
@@ -103,7 +103,7 @@ void ReadLine(ppm_file* result, LINE_TYPE type, string line, int recordSequence)
 	}
 }
 
-ppm_file LoadPPMFile(string fileName) 
+ppm_file LoadPPMFile(std::string fileName) 
 {
 	ppm_file result = {};
 
@@ -114,10 +114,10 @@ ppm_file LoadPPMFile(string fileName)
 	bool isPixlesInitialized = false;
 	int recordSequence = 0;
 
-	ifstream myfile;
+	std::ifstream myfile;
 	myfile.open(fileName);
 
-	string line;
+	std::string line;
 	if (myfile.is_open())
 	{
 		while (getline(myfile, line))
@@ -203,7 +203,7 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 					 LPSTR lpCmdLine,
 					 int nCmdShow)
 {
-	string fileName = lpCmdLine;
+	std::string fileName = lpCmdLine;
 	ppm_file file = LoadPPMFile(fileName);
 	if (file.format != "P3")
 	{
@@ -243,6 +243,10 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 		IsRunning = true;
 		ShowWindow(window, nCmdShow);
 
+		int startTime = 0;
+		int endTime = 0;
+		int deltaTime = 0;
+
 		while (IsRunning)
 		{
 			MSG msg;
@@ -253,6 +257,10 @@ int CALLBACK WinMain(HINSTANCE hInstance,
 			}
 
 			DisplayBufferInWindow(&buffer, window);
+			do {
+				endTime = GetTickCount();
+				deltaTime = endTime - startTime;
+			} while (deltaTime < (float)1000 / FRAMES_PER_SECOND);
 		}
 	}
 	delete[] file.pixels;
